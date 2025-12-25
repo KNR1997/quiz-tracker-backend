@@ -1,0 +1,62 @@
+-- name: ListProducts :many
+SELECT
+    *
+FROM
+    products;
+
+-- name: FindProductByID :one
+SELECT
+    *
+FROM
+    products
+WHERE
+    id = $1;
+
+-- name: CreateOrder :one
+INSERT INTO orders (
+  customer_id
+) VALUES ($1) RETURNING *;
+
+-- name: CreateOrderItem :one
+INSERT INTO order_items (order_id, product_id, quantity, price_cents)
+VALUES ($1, $2, $3, $4) RETURNING *;
+
+
+-- name: ListCourses :many
+SELECT
+    *
+FROM
+    courses;
+
+
+-- name: CreateCourse :one
+INSERT INTO courses (
+  name,
+  code
+) VALUES ($1, $2) RETURNING *;
+
+
+-- name: FindCourseByID :one
+SELECT
+    *
+FROM
+    courses
+WHERE
+    id = $1;
+
+
+-- name: UpdateCourse :one
+UPDATE courses
+SET
+  name = $2,
+  code = $3
+WHERE
+  id = $1
+RETURNING *;
+
+
+-- name: DeleteCourse :exec
+DELETE FROM courses
+WHERE
+  id = $1;
+
