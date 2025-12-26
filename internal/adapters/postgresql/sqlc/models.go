@@ -36,3 +36,12 @@ type Product struct {
 	Quantity     int32              `json:"quantity"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 }
+
+type Quiz struct {
+	ID         int64              `json:"id"`
+	CourseID   int64              `json:"course_id"`
+	WeekNumber pgtype.Int4        `json:"week_number"`
+	DateTime   pgtype.Timestamptz `json:"date_time"`
+	Status     string             `json:"status"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+}
