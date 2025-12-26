@@ -12,6 +12,7 @@ import (
 	"github.com/knr1997/quiz-tracker-backend/internal/courses"
 	"github.com/knr1997/quiz-tracker-backend/internal/orders"
 	"github.com/knr1997/quiz-tracker-backend/internal/products"
+	"github.com/knr1997/quiz-tracker-backend/internal/quizzes"
 )
 
 // mount
@@ -40,6 +41,14 @@ func (app *application) mount() http.Handler {
 	r.Post("/courses", courseHandler.CreateCourse)
 	r.Put("/courses/{id}", courseHandler.UpdateCourse)
 	r.Delete("/courses/{id}", courseHandler.DeleteCourse)
+
+	quizService := quizzes.NewService(repo.New(app.db))
+	quizHandler := quizzes.NewHandler(quizService)
+	r.Get("/quizzes", quizHandler.ListQuizzes)
+	r.Get("/quizzes/{id}", quizHandler.GetQuizByID)
+	r.Post("/quizzes", quizHandler.CreateQuiz)
+	r.Put("/quizzes/{id}", quizHandler.UpdateQuiz)
+	r.Delete("/quizzes/{id}", quizHandler.DeleteQuiz)
 
 	productService := products.NewService(repo.New(app.db))
 	productHandler := products.NewHandler(productService)
