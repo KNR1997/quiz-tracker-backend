@@ -60,3 +60,42 @@ DELETE FROM courses
 WHERE
   id = $1;
 
+
+-- name: ListQuizzes :many
+SELECT
+    *
+FROM
+    quizzes;
+
+
+-- name: FindQuizByID :one
+SELECT
+    *
+FROM
+    quizzes
+WHERE
+    id = $1;
+
+
+-- name: CreateQuiz :one
+INSERT INTO quizzes (
+  course_id,
+  week_number,
+  date_time,
+  status
+) VALUES ($1, $2, $3, $4) RETURNING *;
+
+-- name: UpdateQuiz :one
+UPDATE quizzes
+SET
+  week_number = $2,
+  date_time = $3,
+  status = $4
+WHERE
+  id = $1
+RETURNING *;
+
+-- name: DeleteQuiz :exec
+DELETE FROM quizzes
+WHERE
+  id = $1;
