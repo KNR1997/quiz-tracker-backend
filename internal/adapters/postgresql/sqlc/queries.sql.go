@@ -7,6 +7,8 @@ package tutorial
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createCourse = `-- name: CreateCourse :one
@@ -76,6 +78,41 @@ func (q *Queries) CreateOrderItem(ctx context.Context, arg CreateOrderItemParams
 	return i, err
 }
 
+const createQuiz = `-- name: CreateQuiz :one
+INSERT INTO quizzes (
+  course_id,
+  week_number,
+  date_time,
+  status
+) VALUES ($1, $2, $3, $4) RETURNING id, course_id, week_number, date_time, status, created_at
+`
+
+type CreateQuizParams struct {
+	CourseID   int64              `json:"course_id"`
+	WeekNumber pgtype.Int4        `json:"week_number"`
+	DateTime   pgtype.Timestamptz `json:"date_time"`
+	Status     string             `json:"status"`
+}
+
+func (q *Queries) CreateQuiz(ctx context.Context, arg CreateQuizParams) (Quiz, error) {
+	row := q.db.QueryRow(ctx, createQuiz,
+		arg.CourseID,
+		arg.WeekNumber,
+		arg.DateTime,
+		arg.Status,
+	)
+	var i Quiz
+	err := row.Scan(
+		&i.ID,
+		&i.CourseID,
+		&i.WeekNumber,
+		&i.DateTime,
+		&i.Status,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const deleteCourse = `-- name: DeleteCourse :exec
 DELETE FROM courses
 WHERE
@@ -84,6 +121,17 @@ WHERE
 
 func (q *Queries) DeleteCourse(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteCourse, id)
+	return err
+}
+
+const deleteQuiz = `-- name: DeleteQuiz :exec
+DELETE FROM quizzes
+WHERE
+  id = $1
+`
+
+func (q *Queries) DeleteQuiz(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteQuiz, id)
 	return err
 }
 
@@ -125,6 +173,29 @@ func (q *Queries) FindProductByID(ctx context.Context, id int64) (Product, error
 		&i.Name,
 		&i.PriceInCents,
 		&i.Quantity,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const findQuizByID = `-- name: FindQuizByID :one
+SELECT
+    id, course_id, week_number, date_time, status, created_at
+FROM
+    quizzes
+WHERE
+    id = $1
+`
+
+func (q *Queries) FindQuizByID(ctx context.Context, id int64) (Quiz, error) {
+	row := q.db.QueryRow(ctx, findQuizByID, id)
+	var i Quiz
+	err := row.Scan(
+		&i.ID,
+		&i.CourseID,
+		&i.WeekNumber,
+		&i.DateTime,
+		&i.Status,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -195,6 +266,40 @@ func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
 	return items, nil
 }
 
+const listQuizzes = `-- name: ListQuizzes :many
+SELECT
+    id, course_id, week_number, date_time, status, created_at
+FROM
+    quizzes
+`
+
+func (q *Queries) ListQuizzes(ctx context.Context) ([]Quiz, error) {
+	rows, err := q.db.Query(ctx, listQuizzes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Quiz
+	for rows.Next() {
+		var i Quiz
+		if err := rows.Scan(
+			&i.ID,
+			&i.CourseID,
+			&i.WeekNumber,
+			&i.DateTime,
+			&i.Status,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateCourse = `-- name: UpdateCourse :one
 UPDATE courses
 SET
@@ -218,6 +323,43 @@ func (q *Queries) UpdateCourse(ctx context.Context, arg UpdateCourseParams) (Cou
 		&i.ID,
 		&i.Name,
 		&i.Code,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateQuiz = `-- name: UpdateQuiz :one
+UPDATE quizzes
+SET
+  week_number = $2,
+  date_time = $3,
+  status = $4
+WHERE
+  id = $1
+RETURNING id, course_id, week_number, date_time, status, created_at
+`
+
+type UpdateQuizParams struct {
+	ID         int64              `json:"id"`
+	WeekNumber pgtype.Int4        `json:"week_number"`
+	DateTime   pgtype.Timestamptz `json:"date_time"`
+	Status     string             `json:"status"`
+}
+
+func (q *Queries) UpdateQuiz(ctx context.Context, arg UpdateQuizParams) (Quiz, error) {
+	row := q.db.QueryRow(ctx, updateQuiz,
+		arg.ID,
+		arg.WeekNumber,
+		arg.DateTime,
+		arg.Status,
+	)
+	var i Quiz
+	err := row.Scan(
+		&i.ID,
+		&i.CourseID,
+		&i.WeekNumber,
+		&i.DateTime,
+		&i.Status,
 		&i.CreatedAt,
 	)
 	return i, err
