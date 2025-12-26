@@ -12,12 +12,17 @@ type Querier interface {
 	CreateCourse(ctx context.Context, arg CreateCourseParams) (Course, error)
 	CreateOrder(ctx context.Context, customerID int64) (Order, error)
 	CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (OrderItem, error)
+	CreateQuiz(ctx context.Context, arg CreateQuizParams) (Quiz, error)
 	DeleteCourse(ctx context.Context, id int64) error
+	DeleteQuiz(ctx context.Context, id int64) error
 	FindCourseByID(ctx context.Context, id int64) (Course, error)
 	FindProductByID(ctx context.Context, id int64) (Product, error)
+	FindQuizByID(ctx context.Context, id int64) (Quiz, error)
 	ListCourses(ctx context.Context) ([]Course, error)
 	ListProducts(ctx context.Context) ([]Product, error)
+	ListQuizzes(ctx context.Context) ([]Quiz, error)
 	UpdateCourse(ctx context.Context, arg UpdateCourseParams) (Course, error)
+	UpdateQuiz(ctx context.Context, arg UpdateQuizParams) (Quiz, error)
 }
 
 var _ Querier = (*Queries)(nil)
